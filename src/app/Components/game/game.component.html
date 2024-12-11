@@ -1,0 +1,59 @@
+<!-- 
+<form [formGroup]="gameForm" (ngSubmit)="onSubmit()">
+    <input type="text" name="word" id="word" formControlName="word">
+    <button type="submit">Beküldés</button>
+</form> -->
+
+<div class="container">
+    @if(players.length > 0 && isJoined) {
+        @if (isJoined) {
+            @if(players.length > 0 && isJoined) {
+                <div id="playerList">
+                    <h2>Játékosok:</h2>
+                    <ul>
+                        @for (player of players; track $index) {
+                            <li>{{ player }}</li>
+                        }
+                    </ul>
+                </div>
+            }
+            @if(gameState) {
+                <div class="info">
+                    <p>Előző szó: <span id="data">{{ gameState.word }}</span></p>
+                    <p>Következő úriember a soron: <span id="data">{{ gameState.current_turn_username }}</span></p>
+                    <p>Következő betű: <span id="data">{{ gameState.gameState[0].last_letter }}</span></p>
+                </div>
+            }
+
+            <form [formGroup]="gameForm" (ngSubmit)="onAddWord()">
+                <label for="word">Következő szó</label>
+                @if(errorMessage) {
+                    <p style="color: red;">{{ errorMessage }}</p>
+                }
+                <input type="text" name="word" id="word" formControlName="word">
+                <button type="submit">Beküldés</button>
+            </form>
+        }
+    
+    <!-- 
+        <div>
+            <h2>Szavak:</h2>
+            @if (validWords.length > 0) {
+                <ul>
+                    @for (word of words; track $index) {
+                        <li>{{ word.word }}</li>
+                    }
+                </ul>
+            }
+        </div> -->
+    
+    }
+    @if(!isJoined) {
+        <form [formGroup]="joinForm" (submit)="onJoinGame()">
+            <label for="username">Felhasználónév</label>
+            <input type="text" name="username" id="username" formControlName="username" />
+            <button type="submit">Csatlakozás</button>
+        </form>
+    }
+</div>
+

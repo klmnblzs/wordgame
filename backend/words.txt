@@ -46744,6 +46744,7 @@ innivaló
 innovativitás
 innovatív
 innováció
+ikarusz
 innét
 inog
 input
@@ -75563,6 +75564,7 @@ nyisszant
 nyit
 nyitány
 nyitás
+nyitva
 nyitható
 nyitja
 nyitó
@@ -84829,6 +84831,8 @@ rákorcsolyázik
 rákorongozik
 rákos
 rakosgat
+ratyi
+rémálom
 rakott
 rákovácsol
 rákozmál

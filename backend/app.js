@@ -25,15 +25,6 @@ const io = new Server(server, {
   },
 });
 
-async function getWords() {
-  fs.readFile("./words.txt", "utf8", (err, data) => {
-    if (err) {
-      return res.status(500).json({ error: "Error while loading files" });
-    }
-    return words = data.split("\n").map((word) => word.trim().toLowerCase());
-  });
-}
-
 app.use(
   cors({
     origin: "*",
@@ -47,7 +38,7 @@ io.on("connection", (socket) => {
     try {
       console.log("Joined: " + socket.id + " (" + username + ")")
       const [playerJoined] = await pool.query(
-        "INSERT INTO players (socket_id, username, is_active) VALUES (?, ?, TRUE)",
+        "INSERT INTO players (socket_id, username) VALUES (?, ?)",
         [socket.id, username]
       );
 
@@ -77,9 +68,8 @@ io.on("connection", (socket) => {
         "SELECT * FROM game_state LIMIT 1"
       );
 
-      doubleLetters = ["ny", "sz", "cs", "dz", "zs", "ly"]
+      doubleLetters = ["ny", "sz", "cs", "dz", "zs", "ly", "gy"]
       const gameState = gameStateResult[0];
-      // if(doubleLetters.includes(word.slice(-2)))
       const lastLetter = gameState?.last_letter || "";
       
       if ((lastLetter && (word[0].toLowerCase() !== lastLetter.toLowerCase()) && (word.substring(0,2).toLowerCase() !== lastLetter.toLowerCase()))) {
@@ -98,7 +88,7 @@ io.on("connection", (socket) => {
       const [usedWords] = await pool.query('SELECT COUNT(*) AS count FROM words WHERE LOWER(word) = ?', [word])
       
       if(usedWords[0].count > 0) {
-        socket.emit('addWordError', { error: 'Ezt a szavat már használták' });
+        socket.emit('addWordError', { error: 'Ezt a szót már használták' });
         return;
       }
 
@@ -135,11 +125,41 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", async () => {
     try {
-      await pool.query("DELETE FROM players WHERE socket_id = ?", [socket.id]);
-      console.log("Disconnected: " + socket.id);
+      const [disconnectedPlayer] = await pool.query("SELECT id FROM players WHERE socket_id = ?", [socket.id]);
+      console.log("Disconnected: " + socket.id)
 
-      const [players] = await pool.query("SELECT username FROM players");
+      if(disconnectedPlayer.length > 0) {
+        const disconnectedPlayerId = disconnectedPlayer[0].id
+        await pool.query("DELETE FROM players WHERE socket_id = ?", [socket.id]);
+        const [currentTurnIdQuery] = await pool.query("SELECT current_turn_id FROM game_state")
+        const currentTurnId = currentTurnIdQuery[0].current_turn_id
 
+        if(disconnectedPlayerId == currentTurnId) {
+         const nextPlayerId = await getNextPlayerId(currentTurnId)
+
+          await pool.query(
+            "UPDATE game_state SET current_turn_id = ?",
+            [nextPlayerId]
+          );
+
+          const [updatedGameState] = await pool.query(
+            "SELECT * FROM game_state LIMIT 1"
+          );
+    
+          const [nextPlayer] = await pool.query("SELECT username FROM players WHERE id = ?", [nextPlayerId]);
+          const [words] = await pool.query("SELECT word FROM words ORDER BY timestamp DESC")
+          lastWord = words[0]?.word
+
+          io.emit("updateGameState", {
+            gameState: updatedGameState,
+            word: lastWord || '',
+            current_turn_username: nextPlayer[0]?.username || "Tudja a fasz",
+          });
+        }
+      }
+
+      const [players] = await pool.query("SELECT id, username FROM players");
+      
       if(players.length>0) {
         io.emit(
           "updatePlayers",

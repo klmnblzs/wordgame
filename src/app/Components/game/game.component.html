@@ -18,19 +18,25 @@
                 </div>
             }
             @if(gameState) {
-                <div class="info">
-                    <p>Előző szó: <span id="data">{{ gameState.word }}</span></p>
-                    <p>Következő úriember a soron: <span id="data">{{ gameState.current_turn_username }}</span></p>
-                    <p>Következő betű: <span id="data">{{ gameState.gameState[0].last_letter }}</span></p>
-                </div>
+                @if(gameState == "tbd") {
+                    <div class="info">
+                        <p>Az első játékos írjon be egy szót</p>
+                    </div>
+                } @else {
+                    <div class="info">
+                        <p>Következő úriember a soron: <span id="data">{{ gameState.current_turn_username }}</span></p>
+                        <p>Előző szó: <span id="data">{{ gameState.word }}</span></p>
+                        <p>Következő betű: <span id="data">{{ gameState.gameState[0].last_letter }}</span></p>
+                    </div>
+                }
             }
 
             <form [formGroup]="gameForm" (ngSubmit)="onAddWord()">
                 <label for="word">Következő szó</label>
-                @if(errorMessage) {
-                    <p style="color: red;">{{ errorMessage }}</p>
-                }
                 <input type="text" name="word" id="word" formControlName="word">
+                @if(errorMessage) {
+                    <p style="color: red; font-size: 19px;">{{ errorMessage }}</p>
+                }
                 <button type="submit">Beküldés</button>
             </form>
         }

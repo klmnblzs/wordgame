@@ -48,10 +48,10 @@ io.on("connection", (socket) => {
       const [words] = await pool.query("SELECT * FROM words");
       io.emit("updateWords", words);
 
-      const [players] = await pool.query("SELECT username FROM players");
+      const [players] = await pool.query("SELECT id, username FROM players");
       io.emit(
         "updatePlayers",
-        players.map((player) => player.username)
+        players.map((player)=>player.username)
       );
 
       if(players.length == 1) {
@@ -103,20 +103,20 @@ io.on("connection", (socket) => {
         [doubleLetters.includes(word.slice(-2).toLowerCase()) ? word.slice(-2).toLowerCase() : word.slice(-1).toLowerCase(), nextPlayerId]
       );
 
+      // io.emit("updatePlayers", nextPlayer.map((player)=>player.username));
+      
       const [words] = await pool.query("SELECT * FROM words");
       io.emit("updateWords", words);
-
-      const [updatedGameState] = await pool.query(
-        "SELECT * FROM game_state LIMIT 1"
-      );
-
+      
+      const [updatedGameState] = await pool.query("SELECT * FROM game_state LIMIT 1");
       const [nextPlayer] = await pool.query("SELECT username FROM players WHERE id = ?", [nextPlayerId]);
-
+      
       io.emit("updateGameState", {
         gameState: updatedGameState,
         word: word,
         current_turn_username: nextPlayer[0]?.username || "Tudja a fasz",
       });
+
     } catch (error) {
       console.error("Error adding word:", error);
       socket.emit("addWordError", "An error occurred while adding the word.");
@@ -158,13 +158,10 @@ io.on("connection", (socket) => {
         }
       }
 
-      const [players] = await pool.query("SELECT id, username FROM players");
+      const [players] = await pool.query("SELECT username FROM players");
       
       if(players.length>0) {
-        io.emit(
-          "updatePlayers",
-          players.map((player) => player.username)
-        );
+        io.emit("updatePlayers", players.map((player)=>player.username));
       } else {
         await pool.query("DELETE FROM words")
         await pool.query("UPDATE game_state SET last_letter=''")

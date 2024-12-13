@@ -18,8 +18,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
   private socket: Socket;
   constructor() {
-    this.socket = io('http://localhost:3000')
-    // this.socket = io('http://192.168.164.135:3000')
+    // this.socket = io('http://localhost:3000')
+    this.socket = io('http://192.168.164.135:3000')
   }
 
   usedWords: string[] = [];
@@ -31,7 +31,6 @@ export class GameComponent implements OnInit, OnDestroy {
   errorMessage:string = '';
 
   playerId: string = '';
-
   isJoined: boolean = false;
 
   gameForm = new FormGroup({
@@ -53,6 +52,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
     this.socket.on('updateGameState', (state: any) => {
       this.gameState = state;
+      console.log(state)
     });
 
     this.socket.on('playerJoined', (data: any) => {
@@ -75,18 +75,17 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   onAddWord(): void {
-    
     if (this.gameForm.value.word) {
       if(this.validWords.includes(this.gameForm.value.word.toLowerCase())) {
         this.socket.emit('addWord', { word: this.gameForm.value.word.toLowerCase(), playerId: this.playerId });
         
         this.socket.on('addWordError', (error: any) => {
-          this.errorMessage=error.error
+          this.errorMessage=error
           return;
         });
 
         this.socket.on('updateWords', (words: any[]) => {
-          this.words = words;
+          this.words = words
           this.errorMessage='';
           this.gameForm.reset()
         });
@@ -98,8 +97,8 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
   loadValidWords(): void {
-    this.httpClient.get<string[]>('http://localhost:3200/words')
-    // this.httpClient.get<string[]>('http://192.168.164.135:3200/words')
+    // this.httpClient.get<string[]>('http://localhost:3200/words')
+    this.httpClient.get<string[]>('http://192.168.164.135:3200/words')
       .subscribe(words => {
         this.validWords = words;
       });

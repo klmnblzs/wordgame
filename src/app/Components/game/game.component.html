@@ -5,6 +5,7 @@
 </form> -->
 
 <div class="container">
+    <h1>Extra MEGA menő szólánc</h1>
     @if(players.length > 0 && isJoined) {
         @if (isJoined) {
             @if(players.length > 0 && isJoined) {
@@ -12,7 +13,8 @@
                     <h2>Játékosok:</h2>
                     <ul>
                         @for (player of players; track $index) {
-                            <li>{{ player }}</li>
+                            <!-- <li>{{ player }}</li> -->
+                            <li [class.active]="player === gameState.current_turn_username">{{ player }}</li>
                         }
                     </ul>
                 </div>
@@ -24,7 +26,7 @@
                     </div>
                 } @else {
                     <div class="info">
-                        <p>Következő úriember a soron: <span id="data">{{ gameState.current_turn_username }}</span></p>
+                        <!-- <p>Következő úriember a soron: <span id="data">{{ gameState.current_turn_username }}</span></p> -->
                         <p>Előző szó: <span id="data">{{ gameState.word }}</span></p>
                         <p>Következő betű: <span id="data">{{ gameState.gameState[0].last_letter }}</span></p>
                     </div>
